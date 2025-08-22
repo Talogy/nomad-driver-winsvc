@@ -1,13 +1,13 @@
 module github.com/nskerl/nomad-driver-winsvc
 
-go 1.17
+go 1.23.0
 
 require (
 	github.com/StackExchange/wmi v1.2.1
 	github.com/hashicorp/go-hclog v1.0.0
 	github.com/hashicorp/nomad v1.1.6
 	github.com/stretchr/testify v1.7.0
-	golang.org/x/sys v0.0.0-20211102192858-4dd72447c267
+	golang.org/x/sys v0.30.0
 )
 
 require (
@@ -57,9 +57,9 @@ require (
 	github.com/vmihailenco/msgpack/v4 v4.3.12 // indirect
 	github.com/vmihailenco/tagparser v0.1.1 // indirect
 	github.com/zclconf/go-cty v1.8.0 // indirect
-	golang.org/x/crypto v0.0.0-20201002170205-7f63de1d35b0 // indirect
-	golang.org/x/net v0.0.0-20201224014010-6772e930b67b // indirect
-	golang.org/x/text v0.3.5 // indirect
+	golang.org/x/crypto v0.35.0 // indirect
+	golang.org/x/net v0.21.0 // indirect
+	golang.org/x/text v0.22.0 // indirect
 	google.golang.org/appengine v1.6.5 // indirect
 	google.golang.org/genproto v0.0.0-20200526211855-cb27e3aa2013 // indirect
 	google.golang.org/grpc v1.29.1 // indirect
