@@ -9,7 +9,6 @@ BUILD_TIME := unknown
 
 LDFLAGS := -s -w -X main.gitSHA=$(GIT_SHA) -X main.buildTime=$(BUILD_TIME)
 
-
 .PHONY: clean build
 
 all: clean build
@@ -19,21 +18,11 @@ info:
 	@$(GO) version
 	@$(GO) env
 
-clean:
-	if exist "$(DIST_DIR)" rmdir /s /q "$(DIST_DIR)"
-
-build:
-	go build -o ${PLUGIN_BINARY} .
-
-
-PLUGIN_BINARY=winsvc-driver.exe
-export GO111MODULE=on
-
 default: build
 
 .PHONY: clean
 clean: ## Remove build artifacts
-	rm -rf ${PLUGIN_BINARY}
+	rm -rf $(DIST_DIR)/$(BINARY_NAME)
 
 build:
 	go build -o $(DIST_DIR)/$(BINARY_NAME) .
