@@ -22,7 +22,7 @@ parameters:
         GOARCH: amd64
         makeTarget: build
         variables: DIST_DIR=$(Build.ArtifactStagingDirectory)
-        workingDirectory: $(Build.SourcesDirectory)/winsvc-driver
+        workingDirectory: $(Build.SourcesDirectory)/nomad-winsvc-driver
         outputDirectory: $(Build.ArtifactStagingDirectory)
         goVersion: 1.25.5
         cgoEnabled: 0
