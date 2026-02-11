@@ -11,7 +11,7 @@ LDFLAGS := -s -w -X main.gitSHA=$(GIT_SHA) -X main.buildTime=$(BUILD_TIME)
 
 .PHONY: clean build
 
-all: clean build
+all: clean build info
 
 info:
 	@echo GO=$(GO)
