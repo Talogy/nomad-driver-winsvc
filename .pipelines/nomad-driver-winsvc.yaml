@@ -17,7 +17,7 @@ parameters:
   - name: segments
     type: object
     default:
-      - target: windows_amd64
+      - target: build
         GOOS: windows
         GOARCH: amd64
         makeTarget: build
