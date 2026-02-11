@@ -1,0 +1,45 @@
+# When a merge occurs into main run a plan, and allow a user to approve the run and apply the changes
+trigger: 
+  branches:
+    include:
+      - main
+
+parameters:
+  - name: goApplicationData
+    type: object
+    default:
+      name: winsvc-driver
+      version: 0.0.1
+      description: windows service plugin used within Hashicorp Nomad
+      publishFeed: TrueTalent/truetalent-nomad-extensions
+      publishDirectory: $(Build.ArtifactStagingDirectory)
+
+  - name: segments
+    type: object
+    default:
+      - target: windows_amd64
+        GOOS: windows
+        GOARCH: amd64
+        makeTarget: build
+        variables: DIST_DIR=$(Build.ArtifactStagingDirectory)
+        workingDirectory: $(Build.SourcesDirectory)/winsvc-driver
+        outputDirectory: $(Build.ArtifactStagingDirectory)
+        goVersion: 1.25.5
+        cgoEnabled: 0
+        runTests: false
+        runLint: false
+        runVulnCheck: false
+
+resources:
+  repositories:
+    - repository: TalogyTrueTalentSharedPipelines
+      type: github
+      endpoint: Talogy
+      name: Talogy/TalogyTrueTalentSharedPipelines
+
+extends:
+  template: Remotes/Nomad Plugins/nomad-extensions.ci-cd.yaml@TalogyTrueTalentSharedPipelines
+  parameters:
+    checkoutRepository: self
+    segments: ${{ parameters.segments }}
+    goApplicationData: ${{ parameters.goApplicationData }}
