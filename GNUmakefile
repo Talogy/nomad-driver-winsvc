@@ -1,4 +1,4 @@
-PLUGIN_BINARY=winsvc-driver.exe
+PLUGIN_BINARY=bin/winsvc-driver.exe
 export GO111MODULE=on
 
 default: build
@@ -8,4 +8,5 @@ clean: ## Remove build artifacts
 	rm -rf ${PLUGIN_BINARY}
 
 build:
+	mkdir -p bin
 	go build -o ${PLUGIN_BINARY} .
