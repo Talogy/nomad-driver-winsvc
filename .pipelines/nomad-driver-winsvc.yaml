@@ -12,7 +12,7 @@ parameters:
       version: 0.0.1
       description: windows service plugin used within Hashicorp Nomad
       publishFeed: TrueTalent/truetalent-nomad-extensions
-      publishDirectory: $(Build.ArtifactStagingDirectory)/bin
+      publishDirectory: $(Build.ArtifactStagingDirectory)
 
   - name: segments
     type: object
