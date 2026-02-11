@@ -1,4 +1,4 @@
-BINARY_NAME ?= winsvc-driver
+BINARY_NAME ?= winsvc-driver.exe
 DIST_DIR    ?= dist
 GO          ?= go
 CGO_ENABLED ?= 0
@@ -26,7 +26,7 @@ build:
 	go build -o ${PLUGIN_BINARY} .
 
 
-PLUGIN_BINARY=bin/winsvc-driver.exe
+PLUGIN_BINARY=winsvc-driver.exe
 export GO111MODULE=on
 
 default: build
@@ -36,5 +36,4 @@ clean: ## Remove build artifacts
 	rm -rf ${PLUGIN_BINARY}
 
 build:
-	mkdir -p bin
-	go build -o ${PLUGIN_BINARY} .
+	go build -o $(DIST_DIR)/$(BINARY_NAME) .
