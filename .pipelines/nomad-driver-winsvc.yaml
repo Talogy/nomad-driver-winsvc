@@ -36,7 +36,6 @@ resources:
       type: github
       endpoint: Talogy
       name: Talogy/TalogyTrueTalentSharedPipelines
-      ref: 'refs/heads/refactorGoTemplate'
 
 extends:
   template: Remotes/Nomad Plugins/nomad-extensions.ci-cd.yaml@TalogyTrueTalentSharedPipelines
