@@ -469,32 +469,32 @@ func (d *Driver) ensureHealthScript(taskDir string, scriptName string) (string, 
 	// Always overwrite (keeps upgrades consistent). If you prefer “write once”, check os.Stat first.
 	script := `param()
 
-$ErrorActionPreference = "Stop"
+	$ErrorActionPreference = "Stop"
 
-# Driver computes: nomad.winsvc.<job>.<alloc>
-$svcName = "nomad.winsvc.$($env:NOMAD_JOB_NAME).$($env:NOMAD_ALLOC_ID)"
+	# Driver computes: nomad.winsvc.<job>.<alloc>
+	$svcName = "nomad.winsvc.$($env:NOMAD_JOB_NAME).$($env:NOMAD_ALLOC_ID)"
 
-# Allow override if you ever want it
-if ($env:NOMAD_WINSVC_SERVICE_NAME -and $env:NOMAD_WINSVC_SERVICE_NAME.Trim().Length -gt 0) {
-  $svcName = $env:NOMAD_WINSVC_SERVICE_NAME
-}
+	# Allow override if you ever want it
+	if ($env:NOMAD_WINSVC_SERVICE_NAME -and $env:NOMAD_WINSVC_SERVICE_NAME.Trim().Length -gt 0) {
+		$svcName = $env:NOMAD_WINSVC_SERVICE_NAME
+	}
 
-# 1) SCM state
-$svc = Get-Service -Name $svcName -ErrorAction Stop
-if ($svc.Status -ne "Running") { exit 2 }
+	# 1) SCM state
+	$svc = Get-Service -Name $svcName -ErrorAction Stop
+	if ($svc.Status -ne "Running") { exit 2 }
 
-# 2) PID must exist
-$wmi = Get-CimInstance Win32_Service -Filter ("Name='{0}'" -f $svcName)
-if (-not $wmi -or $wmi.ProcessId -le 0) { exit 3 }
+	# 2) PID must exist
+	$wmi = Get-CimInstance Win32_Service -Filter ("Name='{0}'" -f $svcName)
+	if (-not $wmi -or $wmi.ProcessId -le 0) { exit 3 }
 
-# 3) Process should be present
-$proc = Get-Process -Id $wmi.ProcessId -ErrorAction Stop
+	# 3) Process should be present
+	$proc = Get-Process -Id $wmi.ProcessId -ErrorAction Stop
 
-# Optional: if you want to fail on “Not Responding” (GUI apps), usually irrelevant for services
-# if ($proc.Responding -eq $false) { exit 4 }
+	# If we want to fail on “Not Responding” (GUI apps), usually irrelevant for services
+	# if ($proc.Responding -eq $false) { exit 4 }
 
-exit 0
-`
+	exit 0
+	`
 
 	if err := os.WriteFile(fullPath, []byte(script), 0644); err != nil {
 		return "", err
