@@ -479,19 +479,16 @@ func (d *Driver) ensureHealthScript(taskDir string, scriptName string) (string, 
 		$svcName = $env:NOMAD_WINSVC_SERVICE_NAME
 	}
 
-	# 1) SCM state
+	# SCM state
 	$svc = Get-Service -Name $svcName -ErrorAction Stop
 	if ($svc.Status -ne "Running") { exit 2 }
 
-	# 2) PID must exist
+	# PID must exist
 	$wmi = Get-CimInstance Win32_Service -Filter ("Name='{0}'" -f $svcName)
 	if (-not $wmi -or $wmi.ProcessId -le 0) { exit 3 }
 
-	# 3) Process should be present
+	# Process should be present
 	$proc = Get-Process -Id $wmi.ProcessId -ErrorAction Stop
-
-	# If we want to fail on “Not Responding” (GUI apps), usually irrelevant for services
-	# if ($proc.Responding -eq $false) { exit 4 }
 
 	exit 0
 	`
