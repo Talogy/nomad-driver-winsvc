@@ -1,6 +1,6 @@
 module github.com/nskerl/nomad-driver-winsvc
 
-go 1.17
+go 1.26
 
 require (
 	github.com/StackExchange/wmi v1.2.1
