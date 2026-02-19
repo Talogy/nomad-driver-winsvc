@@ -3,6 +3,7 @@ package winsvc
 import (
 	"context"
 	"fmt"
+	"os"
 	"path/filepath"
 	"time"
 
@@ -44,6 +45,9 @@ var (
 		"service_start_name": hclspec.NewAttr("service_start_name", "string", false),
 		"username":           hclspec.NewAttr("username", "string", false),
 		"password":           hclspec.NewAttr("password", "string", false),
+
+		"write_health_script": hclspec.NewAttr("write_health_script", "bool", false),
+		"health_script_name":  hclspec.NewAttr("health_script_name", "string", false),
 	})
 
 	// capabilities indicates what optional features this driver supports
@@ -101,6 +105,9 @@ type TaskConfig struct {
 	ServiceStartName string   `codec:"service_start_name"`
 	Username         string   `codec:"username"`
 	Password         string   `codec:"password"`
+
+	WriteHealthScript bool   `codec:"write_health_script"`
+	HealthScriptName  string `codec:"health_script_name"`
 }
 
 // TaskState is the state which is encoded in the handle returned in
@@ -214,6 +221,10 @@ func (d *Driver) RecoverTask(handle *drivers.TaskHandle) error {
 		return fmt.Errorf("failed to decode driver config: %v", err)
 	}
 
+	if driverConfig.WriteHealthScript {
+		_, _ = d.ensureHealthScript(handle.Config.TaskDir().Dir, driverConfig.HealthScriptName)
+	}
+
 	var taskState TaskState
 	if err := handle.GetDriverState(&taskState); err != nil {
 		return fmt.Errorf("failed to decode task state from handle: %v", err)
@@ -262,6 +273,21 @@ func (d *Driver) StartTask(cfg *drivers.TaskConfig) (*drivers.TaskHandle, *drive
 	var driverConfig TaskConfig
 	if err = cfg.DecodeDriverConfig(&driverConfig); err != nil {
 		return nil, nil, fmt.Errorf("failed to decode driver config: %v", err)
+	}
+
+	// defaults
+	if !driverConfig.WriteHealthScript {
+		// Enabled by default
+		// driverConfig.WriteHealthScript = true
+	}
+	if driverConfig.HealthScriptName == "" {
+		driverConfig.HealthScriptName = "winsvc-health.ps1"
+	}
+
+	if driverConfig.WriteHealthScript {
+		if _, err := d.ensureHealthScript(cfg.TaskDir().Dir, driverConfig.HealthScriptName); err != nil {
+			return nil, nil, fmt.Errorf("failed to write health script: %v", err)
+		}
 	}
 
 	d.logger.Info("starting winsvc task", "driver_cfg", hclog.Fmt("%+v", driverConfig))
@@ -430,4 +456,49 @@ func (d *Driver) SignalTask(taskID string, signal string) error {
 
 func (d *Driver) ExecTask(taskID string, cmd []string, timeout time.Duration) (*drivers.ExecTaskResult, error) {
 	return nil, fmt.Errorf("this driver does not support exec")
+}
+
+func (d *Driver) ensureHealthScript(taskDir string, scriptName string) (string, error) {
+	if scriptName == "" {
+		scriptName = "winsvc-health.ps1"
+	}
+
+	// Place it in the task dir so it’s per-allocation and guaranteed to exist on the node
+	fullPath := filepath.Join(taskDir, scriptName)
+
+	// Always overwrite (keeps upgrades consistent). If you prefer “write once”, check os.Stat first.
+	script := `param()
+
+$ErrorActionPreference = "Stop"
+
+# Driver computes: nomad.winsvc.<job>.<alloc>
+$svcName = "nomad.winsvc.$($env:NOMAD_JOB_NAME).$($env:NOMAD_ALLOC_ID)"
+
+# Allow override if you ever want it
+if ($env:NOMAD_WINSVC_SERVICE_NAME -and $env:NOMAD_WINSVC_SERVICE_NAME.Trim().Length -gt 0) {
+  $svcName = $env:NOMAD_WINSVC_SERVICE_NAME
+}
+
+# 1) SCM state
+$svc = Get-Service -Name $svcName -ErrorAction Stop
+if ($svc.Status -ne "Running") { exit 2 }
+
+# 2) PID must exist
+$wmi = Get-CimInstance Win32_Service -Filter ("Name='{0}'" -f $svcName)
+if (-not $wmi -or $wmi.ProcessId -le 0) { exit 3 }
+
+# 3) Process should be present
+$proc = Get-Process -Id $wmi.ProcessId -ErrorAction Stop
+
+# Optional: if you want to fail on “Not Responding” (GUI apps), usually irrelevant for services
+# if ($proc.Responding -eq $false) { exit 4 }
+
+exit 0
+`
+
+	if err := os.WriteFile(fullPath, []byte(script), 0644); err != nil {
+		return "", err
+	}
+
+	return fullPath, nil
 }
