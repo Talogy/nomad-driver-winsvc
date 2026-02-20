@@ -24,7 +24,7 @@ parameters:
         variables: DIST_DIR=$(Build.ArtifactStagingDirectory)
         workingDirectory: $(Build.SourcesDirectory)
         outputDirectory: $(Build.ArtifactStagingDirectory)
-        goVersion: 1.25.5
+        goVersion: 1.26
         cgoEnabled: 0
         runTests: false
         runLint: false
